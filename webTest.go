@@ -22,8 +22,8 @@ type tlsT struct {
 }
 
 type serverIPT struct {
-	IP   string
-	Port string
+	IP   string `json:"serverIP"`
+	Port string `json:"serverPort"`
 }
 
 func main() {
