@@ -1,0 +1,4 @@
+{
+    "Fullchain": "webapp.millasays.com/fullchain.pem",
+    "PrivKEy": "webapp.millasays.com/privkey.pem"
+}

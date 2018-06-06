@@ -10,8 +10,9 @@ import (
 )
 
 var out string
-var appIP = "40.115.40.151:80"
+var appIP string
 var ipFile = "./outboundIP.json"
+var tlsNameFile = "./tlsName.json"
 var fullchain = "/etc/letsencrypt/live/webapp.millasays.com/fullchain.pem"
 var privKey = "/etc/letsencrypt/live/webapp.millasays.com/privkey.pem"
 
@@ -97,6 +98,27 @@ func loadPrivateIP() (string, error) {
 	}
 	ipOut = fmt.Sprintf("%s:%s", ipIn.IP, ipIn.Port)
 	return ipOut, nil
+}
+
+func loadTLSName() (string, string, error) {
+	var full string
+	var priv string
+	var tls tlsT
+
+	f, err := os.Open(tlsNameFile)
+	if err != nil {
+		return "", "", err
+	}
+	defer f.Close()
+
+	tlsJSON := json.NewDecoder(f)
+	if err = tlsJSON.Decode(&tls); err != nil {
+		return "", "", err
+	}
+	full = tls.Fullchain
+	priv = tls.PrivKey
+
+	return full, priv, nil
 }
 
 func closeApp(in string, save bool) {
