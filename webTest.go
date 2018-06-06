@@ -31,7 +31,7 @@ func main() {
 	getIP, err := loadPrivateIP()
 	if err != nil {
 		msg := fmt.Sprintf("Error loading IP config - exiting %v\n", err)
-		CloseApp(msg, false)
+		closeApp(msg, false)
 	}
 
 	appIP = getIP
@@ -98,4 +98,9 @@ func loadPrivateIP() (string, error) {
 	}
 	ipOut = fmt.Sprintf("%s:%s", ipIn.serverIP, ipIn.serverPort)
 	return ipOut, nil
+}
+
+func closeApp(in string, save bool) {
+	log.Printf(in)
+	os.Exit(0)
 }
