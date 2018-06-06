@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html"
 	"log"
@@ -11,6 +12,7 @@ import (
 
 var out string
 var appIP = "40.115.40.151:80"
+var ipFile = "./outboundIP.json"
 var fullchain = "/etc/letsencrypt/live/webapp.millasays.com/fullchain.pem"
 var privKey = "/etc/letsencrypt/live/webapp.millasays.com/privkey.pem"
 
@@ -19,7 +21,20 @@ type tlsT struct {
 	PrivKey   string
 }
 
+type serverIPT struct {
+	IP      string
+	Version string
+}
+
 func main() {
+
+	getIP, err := loadPrivateIP()
+	if err != nil {
+		msg := fmt.Sprintf("Error loading IP config - exiting %v\n", err)
+		CloseApp(msg, false)
+	}
+
+	appIP = getIP
 
 	server := &http.Server{
 		Addr:         appIP,
@@ -28,8 +43,6 @@ func main() {
 	}
 
 	http.HandleFunc("/", tester)
-
-	log.Fatal(http.ListenAndServe(":80", nil))
 
 	TLS, live := checkTLSExists()
 
@@ -67,4 +80,22 @@ func checkTLSExists() (tlsT, bool) {
 		TLS.PrivKey = privKey
 	}
 	return TLS, exists
+}
+
+func loadPrivateIP() (string, error) {
+	var ipOut string
+	var ipIn serverIPT
+
+	f, err := os.Open(ipFile)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	ipJSON := json.NewDecoder(f)
+	if err = ipJSON.Decode(&ipIn); err != nil {
+		return "", err
+	}
+	ipOut = fmt.Sprintf("%s:%s", ipIn.serverIP, ipIn.serverPort)
+	return ipOut, nil
 }
