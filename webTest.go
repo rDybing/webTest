@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"html"
 	"log"
 	"net/http"
 	"os"
@@ -62,10 +61,10 @@ func main() {
 
 func tester(w http.ResponseWriter, r *http.Request) {
 	clientIP := r.URL.Path
-	fmt.Fprintf(w, "%q", html.EscapeString(out))
+	fmt.Fprintf(w, "%s", out)
 	fmt.Printf("Inbound from     : %s\n", clientIP)
 	fmt.Printf("Response from    : %s\n", appIP)
-	fmt.Fprintf(w, "Inbound from     : %q\nResponse from    : %q", html.EscapeString(clientIP), html.EscapeString(appIP))
+	fmt.Fprintf(w, "Inbound from     : %s\nResponse from    : %s", clientIP, appIP)
 }
 
 func checkTLSExists() (tlsT, bool) {
