@@ -22,8 +22,8 @@ type tlsT struct {
 }
 
 type serverIPT struct {
-	IP      string
-	Version string
+	IP   string
+	Port string
 }
 
 func main() {
@@ -96,7 +96,7 @@ func loadPrivateIP() (string, error) {
 	if err = ipJSON.Decode(&ipIn); err != nil {
 		return "", err
 	}
-	ipOut = fmt.Sprintf("%s:%s", ipIn.serverIP, ipIn.serverPort)
+	ipOut = fmt.Sprintf("%s:%s", ipIn.IP, ipIn.Port)
 	return ipOut, nil
 }
 
