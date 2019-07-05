@@ -8,7 +8,7 @@ Build and run. Then point browser towards your DNS for this server using `https:
 
 ```
 TLS Certs loaded - running over https
-Inbound from     : <some IP>/
+Inbound from     : <some IP>:<some Port>
 Response from    : <some IP>:443
 ```
 
@@ -16,7 +16,7 @@ Should TLS certificates not be found (as in wrong path/name given in `tlsName.js
 
 ```
 No TLS Certs loaded - running over http
-Inbound from     : <some IP>/
+Inbound from     : <some IP>:<some Port>
 Response from    : <some IP>:80
 ```
 
@@ -42,6 +42,10 @@ MeWe:      | Roy Dybing
 
 - Version format: [major release].[new feature(s)].[bugfix patch-version]
 - Date format: yyyy-mm-dd
+
+#### v.1.0.1: 2019-07-05
+- Now actually working as advertised.
+- Changed method of obtaining connecting client IP
 
 #### v.1.0.0: 2019-07-05
 - Working as advertised. No magic or extra bells and whistles added.
