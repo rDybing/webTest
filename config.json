@@ -1,0 +1,5 @@
+{
+    "Fullchain": "<your_path_to _cert_here>/fullchain.pem",
+	"PrivKey": "<your_path_to _cert_here>rdybing.ddns.net/privkey.pem",
+	"Local": true
+}

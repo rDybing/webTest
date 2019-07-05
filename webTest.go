@@ -9,13 +9,13 @@ import (
 	"os"
 )
 
-const ipFile = "./outboundIP.json"
-const tlsNameFile = "./tlsName.json"
-const version = "v1.0.2"
+const configFile = "./config.json"
+const version = "v1.1.0"
 
-type tlsT struct {
+type configT struct {
 	FullChain string
 	PrivKey   string
+	Local     bool
 }
 
 type serverIPT struct {
@@ -30,21 +30,16 @@ type outPutT struct {
 }
 
 func main() {
+	var con configT
+	tlsOK := con.loadConfig()
 	var out outPutT
-	err := out.loadPrivateIP()
+	out.getPrivateIP(con.Local, tlsOK)
 
-	if err != nil {
-		log.Fatalf("Error loading IP config - exiting %v\n", err)
-	}
-
-	var tls tlsT
-	live := tls.loadTLS()
-
-	if live {
+	if tlsOK {
 		out.message = fmt.Sprintf("TLS webTest %s\nTLS Certs loaded - running over https\n", version)
 		fmt.Printf(out.message)
 		fmt.Printf("Server IP: %s\n", out.serverIP)
-		err := http.ListenAndServeTLS(out.serverIP, tls.FullChain, tls.PrivKey, out.handler())
+		err := http.ListenAndServeTLS(out.serverIP, con.FullChain, con.PrivKey, out.handler())
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -74,26 +69,31 @@ func (o *outPutT) testPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Inbound from     : %s\nResponse from    : %s", o.clientIP, o.serverIP)
 }
 
-func (o *outPutT) loadPrivateIP() error {
-	var ipIn serverIPT
-
-	f, err := os.Open(ipFile)
-	if err != nil {
-		return err
+func (o *outPutT) getPrivateIP(local, tlsOK bool) {
+	var ip string
+	if !local {
+		conn, err := net.Dial("udp", "8.8.8.8:80")
+		defer conn.Close()
+		if err != nil {
+			log.Printf("No internet, local only: %v\n", err)
+			ip = "127.0.0.1:8080"
+		} else {
+			port := "80"
+			if tlsOK {
+				port = "443"
+			}
+			localIP := conn.LocalAddr().(*net.UDPAddr)
+			ip = fmt.Sprintf("%v:%s", localIP.IP, port)
+		}
+	} else {
+		ip = "127.0.0.1:8080"
 	}
-	defer f.Close()
-
-	ipJSON := json.NewDecoder(f)
-	if err := ipJSON.Decode(&ipIn); err != nil {
-		return err
-	}
-	o.serverIP = fmt.Sprintf("%s:%s", ipIn.IP, ipIn.Port)
-	return nil
+	o.serverIP = ip
 }
 
-func (t *tlsT) loadTLS() bool {
+func (c *configT) loadConfig() bool {
 	ok := true
-	f, err := os.Open(tlsNameFile)
+	f, err := os.Open(configFile)
 	if err != nil {
 		log.Printf("Failed to load TLS certs - no https for you!\n%v\n", err)
 		ok = false
@@ -101,16 +101,16 @@ func (t *tlsT) loadTLS() bool {
 	defer f.Close()
 
 	tlsJSON := json.NewDecoder(f)
-	if err = tlsJSON.Decode(&t); err != nil {
+	if err = tlsJSON.Decode(&c); err != nil {
 		log.Printf("Failed to decode TLS certs JSON - no https for you!\n%v\n", err)
 		ok = false
 	}
 	// get if tls certs exist on server
-	if _, err := os.Stat(t.FullChain); err != nil {
+	if _, err := os.Stat(c.FullChain); err != nil {
 		log.Printf("Failed to find FullChain cert - no https for you!\n%v\n", err)
 		ok = false
 	}
-	if _, err := os.Stat(t.PrivKey); err != nil {
+	if _, err := os.Stat(c.PrivKey); err != nil {
 		log.Printf("Failed to find Private Key - no https for you!\n%v\n", err)
 		ok = false
 	}

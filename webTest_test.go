@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -78,9 +79,43 @@ func TestRouting(t *testing.T) {
 	}
 }
 
-/*
-func TestLoadTLS(t *testing.T) {
-	var tls tlsT
+func TestGetPrivateIP(t *testing.T) {
+	var o outPutT
 
+	const local = "127.0.0.1"
+
+	tt := []struct {
+		name  string
+		local bool
+		tlsOK bool
+		err   string
+	}{
+		{name: "run local, no tls loaded", local: true, tlsOK: false},
+		{name: "run local, with tls loaded", local: true, tlsOK: true},
+		{name: "run WAN, no tls loaded", local: false, tlsOK: false},
+		{name: "run WAN, with tls loaded", local: false, tlsOK: true},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			port := "80"
+			if tc.tlsOK {
+				port = "443"
+			}
+			if tc.local {
+				port = "8080"
+			}
+			o.getPrivateIP(tc.local, tc.tlsOK)
+			ip := strings.Split(o.serverIP, ":")
+			if ip[1] != port {
+				t.Fatalf("Expected port %s, got %s\n", port, ip[1])
+			}
+			if tc.local && ip[0] != local {
+				t.Fatalf("Expected loopback IP, got %s\n", ip[0])
+			}
+			if !tc.local && ip[0] == local {
+				t.Fatalf("Expected non loopback IP, got %s\n", ip[0])
+			}
+		})
+	}
 }
-*/
