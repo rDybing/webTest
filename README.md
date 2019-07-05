@@ -43,9 +43,13 @@ MeWe:      | Roy Dybing
 - Version format: [major release].[new feature(s)].[bugfix patch-version]
 - Date format: yyyy-mm-dd
 
+#### v.1.0.2: 2019-07-05
+- Fixed termination on not finding TLS files.
+- Added some test coverage of http-server.
+
 #### v.1.0.1: 2019-07-05
 - Now actually working as advertised.
-- Changed method of obtaining connecting client IP
+- Changed method of obtaining connecting client IP.
 
 #### v.1.0.0: 2019-07-05
 - Working as advertised. No magic or extra bells and whistles added.

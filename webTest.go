@@ -7,11 +7,11 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"time"
 )
 
 const ipFile = "./outboundIP.json"
 const tlsNameFile = "./tlsName.json"
+const version = "v1.0.2"
 
 type tlsT struct {
 	FullChain string
@@ -37,32 +37,35 @@ func main() {
 		log.Fatalf("Error loading IP config - exiting %v\n", err)
 	}
 
-	server := &http.Server{
-		Addr:         out.serverIP,
-		WriteTimeout: 10 * time.Second,
-		ReadTimeout:  10 * time.Second,
-	}
-
-	http.HandleFunc("/", out.tester)
-
 	var tls tlsT
 	live := tls.loadTLS()
 
 	if live {
-		out.message = fmt.Sprintf("TLS Certs loaded - running over https\n")
+		out.message = fmt.Sprintf("TLS webTest %s\nTLS Certs loaded - running over https\n", version)
 		fmt.Printf(out.message)
 		fmt.Printf("Server IP: %s\n", out.serverIP)
-		log.Fatal(server.ListenAndServeTLS(tls.FullChain, tls.PrivKey))
+		err := http.ListenAndServeTLS(out.serverIP, tls.FullChain, tls.PrivKey, out.handler())
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
-		out.message = fmt.Sprintf("No TLS Certs loaded - running over http\n")
+		out.message = fmt.Sprintf("TLS webTest %s\nNo TLS Certs loaded - running over http\n", version)
 		fmt.Printf(out.message)
 		fmt.Printf("Server IP: %s\n", out.serverIP)
-		log.Fatal(server.ListenAndServe())
+		err := http.ListenAndServe(out.serverIP, out.handler())
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-
 }
 
-func (o *outPutT) tester(w http.ResponseWriter, r *http.Request) {
+func (o *outPutT) handler() http.Handler {
+	r := http.NewServeMux()
+	r.HandleFunc("/", o.testPage)
+	return r
+}
+
+func (o *outPutT) testPage(w http.ResponseWriter, r *http.Request) {
 	ip, port, _ := net.SplitHostPort(r.RemoteAddr)
 	o.clientIP = fmt.Sprintf("%s:%s", ip, port)
 	fmt.Fprintf(w, "%s", o.message)
@@ -89,8 +92,8 @@ func (o *outPutT) loadPrivateIP() error {
 }
 
 func (t *tlsT) loadTLS() bool {
-	f, err := os.Open(tlsNameFile)
 	ok := true
+	f, err := os.Open(tlsNameFile)
 	if err != nil {
 		log.Printf("Failed to load TLS certs - no https for you!\n%v\n", err)
 		ok = false
@@ -100,6 +103,15 @@ func (t *tlsT) loadTLS() bool {
 	tlsJSON := json.NewDecoder(f)
 	if err = tlsJSON.Decode(&t); err != nil {
 		log.Printf("Failed to decode TLS certs JSON - no https for you!\n%v\n", err)
+		ok = false
+	}
+	// get if tls certs exist on server
+	if _, err := os.Stat(t.FullChain); err != nil {
+		log.Printf("Failed to find FullChain cert - no https for you!\n%v\n", err)
+		ok = false
+	}
+	if _, err := os.Stat(t.PrivKey); err != nil {
+		log.Printf("Failed to find Private Key - no https for you!\n%v\n", err)
 		ok = false
 	}
 	return ok
