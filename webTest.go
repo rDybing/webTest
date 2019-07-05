@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -62,7 +63,8 @@ func main() {
 }
 
 func (o *outPutT) tester(w http.ResponseWriter, r *http.Request) {
-	o.clientIP = r.URL.Path
+	ip, port, _ := net.SplitHostPort(r.RemoteAddr)
+	o.clientIP = fmt.Sprintf("%s:%s", ip, port)
 	fmt.Fprintf(w, "%s", o.message)
 	fmt.Printf("Inbound from     : %s\n", o.clientIP)
 	fmt.Printf("Response from    : %s\n", o.serverIP)
