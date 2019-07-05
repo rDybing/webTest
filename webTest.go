@@ -22,62 +22,68 @@ type serverIPT struct {
 	Port string `json:"serverPort"`
 }
 
+type outPutT struct {
+	message  string
+	clientIP string
+	serverIP string
+}
+
 func main() {
-	appIP, err := loadPrivateIP()
+	var out outPutT
+	err := out.loadPrivateIP()
+
 	if err != nil {
-		msg := fmt.Sprintf("Error loading IP config - exiting %v\n", err)
-		closeApp(msg, false)
+		log.Fatalf("Error loading IP config - exiting %v\n", err)
 	}
 
 	server := &http.Server{
-		Addr:         appIP,
+		Addr:         out.serverIP,
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 	}
 
-	http.HandleFunc("/", tester)
+	http.HandleFunc("/", out.tester)
 
 	var tls tlsT
 	live := tls.loadTLS()
 
 	if live {
-		out := fmt.Sprintf("TLS Certs loaded - running over https\n")
-		fmt.Printf(out)
-		fmt.Printf("Server IP: %s\n", appIP)
-		log.Fatal(server.ListenAndServeTLS(tls.Fullchain, tls.PrivKey))
+		out.message = fmt.Sprintf("TLS Certs loaded - running over https\n")
+		fmt.Printf(out.message)
+		fmt.Printf("Server IP: %s\n", out.serverIP)
+		log.Fatal(server.ListenAndServeTLS(tls.FullChain, tls.PrivKey))
 	} else {
-		out := fmt.Sprintf("No TLS Certs loaded - running over http\n")
-		fmt.Printf(out)
-		fmt.Printf("Server IP: %s\n", appIP)
+		out.message = fmt.Sprintf("No TLS Certs loaded - running over http\n")
+		fmt.Printf(out.message)
+		fmt.Printf("Server IP: %s\n", out.serverIP)
 		log.Fatal(server.ListenAndServe())
 	}
 
 }
 
-func tester(w http.ResponseWriter, r *http.Request) {
-	clientIP := r.URL.Path
-	fmt.Fprintf(w, "%s", out)
-	fmt.Printf("Inbound from     : %s\n", clientIP)
-	fmt.Printf("Response from    : %s\n", appIP)
-	fmt.Fprintf(w, "Inbound from     : %s\nResponse from    : %s", clientIP, appIP)
+func (o *outPutT) tester(w http.ResponseWriter, r *http.Request) {
+	o.clientIP = r.URL.Path
+	fmt.Fprintf(w, "%s", o.message)
+	fmt.Printf("Inbound from     : %s\n", o.clientIP)
+	fmt.Printf("Response from    : %s\n", o.serverIP)
+	fmt.Fprintf(w, "Inbound from     : %s\nResponse from    : %s", o.clientIP, o.serverIP)
 }
 
-func loadPrivateIP() (string, error) {
-	var ipOut string
+func (o *outPutT) loadPrivateIP() error {
 	var ipIn serverIPT
 
 	f, err := os.Open(ipFile)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer f.Close()
 
 	ipJSON := json.NewDecoder(f)
-	if err = ipJSON.Decode(&ipIn); err != nil {
-		return "", err
+	if err := ipJSON.Decode(&ipIn); err != nil {
+		return err
 	}
-	ipOut = fmt.Sprintf("%s:%s", ipIn.IP, ipIn.Port)
-	return ipOut, nil
+	o.serverIP = fmt.Sprintf("%s:%s", ipIn.IP, ipIn.Port)
+	return nil
 }
 
 func (t *tlsT) loadTLS() bool {
@@ -95,9 +101,4 @@ func (t *tlsT) loadTLS() bool {
 		ok = false
 	}
 	return ok
-}
-
-func closeApp(in string, save bool) {
-	log.Printf(in)
-	os.Exit(0)
 }
