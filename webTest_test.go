@@ -88,7 +88,6 @@ func TestGetPrivateIP(t *testing.T) {
 		name  string
 		local bool
 		tlsOK bool
-		err   string
 	}{
 		{name: "run local, no tls loaded", local: true, tlsOK: false},
 		{name: "run local, with tls loaded", local: true, tlsOK: true},
