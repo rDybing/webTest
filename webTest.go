@@ -13,8 +13,6 @@ var out string
 var appIP string
 var ipFile = "./outboundIP.json"
 var tlsNameFile = "./tlsName.json"
-var fullchain = "/etc/letsencrypt/live/webapp.millasays.com/fullchain.pem"
-var privKey = "/etc/letsencrypt/live/webapp.millasays.com/privkey.pem"
 
 type tlsT struct {
 	Fullchain string
@@ -76,8 +74,8 @@ func checkTLSExists() (tlsT, bool) {
 		exists = false
 	} else {
 		exists = true
-		TLS.Fullchain = fullchain
-		TLS.PrivKey = privKey
+		
+		TLS.Fullchain, TLS.PrivKey = loadTLSName()
 	}
 	return TLS, exists
 }
@@ -100,25 +98,22 @@ func loadPrivateIP() (string, error) {
 	return ipOut, nil
 }
 
-func loadTLSName() (string, string, error) {
-	var full string
-	var priv string
+func loadTLSName() (string, string) {
 	var tls tlsT
 
 	f, err := os.Open(tlsNameFile)
 	if err != nil {
-		return "", "", err
+		log.Fatalf("Failed to load TLS certs - exiting...\n%v\n", err)
+		return "", ""
 	}
 	defer f.Close()
 
 	tlsJSON := json.NewDecoder(f)
 	if err = tlsJSON.Decode(&tls); err != nil {
-		return "", "", err
+		log.Fatalf("Failed to decode TLS certs JSON - exiting...\n%v\n", err)
+		return "", ""
 	}
-	full = tls.Fullchain
-	priv = tls.PrivKey
-
-	return full, priv, nil
+	return tls.Fullchain, tls.PrivKey
 }
 
 func closeApp(in string, save bool) {

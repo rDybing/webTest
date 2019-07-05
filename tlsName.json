@@ -1,4 +1,4 @@
 {
-    "Fullchain": "webapp.millasays.com/fullchain.pem",
-    "PrivKEy": "webapp.millasays.com/privkey.pem"
+    "Fullchain": "/etc/letsencrypt/live/rdybing.ddns.net/fullchain.pem",
+    "PrivKey": "/etc/letsencrypt/live/rdybing.ddns.net/privkey.pem"
 }
