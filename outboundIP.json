@@ -1,4 +1,4 @@
 {
-    "serverIP": "10.0.0.28",
-    "serverPort": "443"
+    "serverIP": "<your private server IPv4>",
+    "serverPort": "<your server port - usually 443>"
 }

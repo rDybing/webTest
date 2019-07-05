@@ -1,4 +1,4 @@
 {
-    "Fullchain": "/etc/letsencrypt/live/rdybing.ddns.net/fullchain.pem",
-    "PrivKey": "/etc/letsencrypt/live/rdybing.ddns.net/privkey.pem"
+    "Fullchain": "<your_path_to _cert_here>/fullchain.pem",
+    "PrivKey": "<your_path_to _cert_here>rdybing.ddns.net/privkey.pem"
 }
