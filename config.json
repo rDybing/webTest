@@ -1,5 +1,5 @@
 {
-    "Fullchain": "<your_path_to _cert_here>/fullchain.pem",
+	"Fullchain": "<your_path_to _cert_here>/fullchain.pem",
 	"PrivKey": "<your_path_to _cert_here>/privkey.pem",
 	"Local": true
 }
