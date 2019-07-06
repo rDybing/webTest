@@ -10,17 +10,12 @@ import (
 )
 
 const configFile = "./config.json"
-const version = "v1.1.0"
+const version = "v1.1.1"
 
 type configT struct {
 	FullChain string
 	PrivKey   string
 	Local     bool
-}
-
-type serverIPT struct {
-	IP   string `json:"serverIP"`
-	Port string `json:"serverPort"`
 }
 
 type outPutT struct {
@@ -95,14 +90,14 @@ func (c *configT) loadConfig() bool {
 	ok := true
 	f, err := os.Open(configFile)
 	if err != nil {
-		log.Printf("Failed to load TLS certs - no https for you!\n%v\n", err)
+		log.Printf("Failed to load config file - no https for you!\n%v\n", err)
 		ok = false
 	}
 	defer f.Close()
 
-	tlsJSON := json.NewDecoder(f)
-	if err = tlsJSON.Decode(&c); err != nil {
-		log.Printf("Failed to decode TLS certs JSON - no https for you!\n%v\n", err)
+	configJSON := json.NewDecoder(f)
+	if err = configJSON.Decode(&c); err != nil {
+		log.Printf("Failed to decode config JSON - no https for you!\n%v\n", err)
 		ok = false
 	}
 	// get if tls certs exist on server

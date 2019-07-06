@@ -43,6 +43,9 @@ MeWe:      | Roy Dybing
 - Version format: [major release].[new feature(s)].[bugfix patch-version]
 - Date format: yyyy-mm-dd
 
+#### v.1.1.1: 2019-07-06
+- Cleaned up a bit.
+
 #### v.1.1.0: 2019-07-05
 - Removed manual setting of private IP and port, webserver will figure it out.
 
