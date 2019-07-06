@@ -2,7 +2,7 @@
 
 A small tool to test that ones IP, TLS and DNS settings for ones little API/Web server is up and running properly. 
 
-Edit tlsName.json with full path to your TLS private and public keys. Edit outboundIP.json with the private IP of the server on the LAN. Ensure port 443 is forwarded to this address.
+Edit config.json with full path to your TLS private and public keys. Set the 'Local' flag to false if server is supposed to be exposed to the interwebs.
 
 Build and run. Then point browser towards your DNS for this server using `https://<your_IP/DNS>/`. If all succeeds, you should get a return similar to this:
 
@@ -20,7 +20,7 @@ Inbound from     : <some IP>:<some Port>
 Response from    : <some IP>:80
 ```
 
-This app must be run as SUDO or root as hogging ports for web-server purposes demand it.
+This app must be run as SUDO or root as hogging ports for web-server listening purposes demand it if using port 80 or 443.
 
 ## Build
 
